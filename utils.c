@@ -6,9 +6,11 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:36:43 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/03/21 08:36:44 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/03 18:08:39 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include "codexion.h"
 
 void ft_error(char *str)
 {

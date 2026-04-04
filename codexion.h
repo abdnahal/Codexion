@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/03/21 08:04:42 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/04 14:44:47 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,10 @@
 # include <sys/time.h>    /* gettimeofday, struct timeval                    */
 # include <pthread.h>     /* all pthread_* functions                         */
 # include <time.h>        /* struct timespec (for pthread_cond_timedwait)    */
+
+
+void ft_error(char *str);
+long get_time_ms();
 
 /* ========================================================================= */
 /*                              CONSTANTS                                    */
