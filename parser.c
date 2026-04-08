@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:15:56 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/04 14:53:32 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/08 16:18:39 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,21 @@ t_args *innit(long **vars, char **sc)
     return args;
 }
 
+t_coder *innit_coders(t_sim *sim)
+{
+    t_coder *coders;
+    int i;
+    
+    sim->coders = malloc(sizeof(t_coder) * args->num_coders);
+    if (coders == NULL)
+        return NULL;
+    while (i < args->num_coders)
+    {
+        coders[i].id = i+1;
+    }
+    return sim->coders;
+}
+
 int main(int ac, char **av)
 {
     long coders;
@@ -42,6 +57,7 @@ int main(int ac, char **av)
     long cooldown;
     char *scheduler;
     int i;
+    t_sim *sim;
     
     long *vars[] = {&coders, &burnout, &to_compile,
         &to_debug, &to_refactor, &compiles_req,
@@ -55,8 +71,10 @@ int main(int ac, char **av)
         *(vars[i]) = atoi(av[i+1]);
     }
     *sc = av[i];
-    t_args *args = innit(vars, sc);
-    printf("%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n", args->num_coders, args->time_to_burnout, args->time_to_compile, args->time_to_debug, args->time_to_refactor, args->compiles_required, args->dongle_cooldown, args->scheduler);
-
+    sim = malloc(sizeof(t_sim));
+    sim->args = innit(vars, sc);
+    //printf("%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n", args->num_coders, args->time_to_burnout, args->time_to_compile, args->time_to_debug, args->time_to_refactor, args->compiles_required, args->dongle_cooldown, args->scheduler);
+    sim->coders = innit_coders(sim);
+    launch_threads(sim);
     return 1;
 }

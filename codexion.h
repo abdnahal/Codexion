@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/06 14:17:57 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/08 16:20:00 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,6 @@
 # include <pthread.h>     /* all pthread_* functions                         */
 # include <time.h>        /* struct timespec (for pthread_cond_timedwait)    */
 
-
-void ft_error(char *str);
-long get_time_ms();
-long get_time_ms();
 
 /* ========================================================================= */
 /*                              CONSTANTS                                    */
@@ -59,6 +55,12 @@ typedef struct s_dongle     t_dongle;
 typedef struct s_waiter     t_waiter;
 typedef struct s_heap       t_heap;
 typedef struct s_args       t_args;
+
+void ft_error(char *str);
+long get_time_ms();
+void launch_threads(t_sim *sim);
+t_coder *innit_coders(t_sim* sim);
+void *routine(void *sim);
 
 /* ========================================================================= */
 /*                           HEAP / PRIORITY QUEUE                          */
