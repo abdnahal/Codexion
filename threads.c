@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/08 15:34:23 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/09 11:17:46 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/09 14:33:49 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,12 @@ void *routine(void *sim)
     printf("thread launched\n");
     return NULL;
 }
+
+// void take_dongle(t_sim *sim)
+// {
+//     if (sim->coders->right_dongle->is_taken)
+// }
+
 
 void launch_threads(t_sim *sim)
 {

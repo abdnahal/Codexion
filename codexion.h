@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/09 11:15:16 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/09 14:40:22 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 # include <sys/time.h>    /* gettimeofday, struct timeval                    */
 # include <pthread.h>     /* all pthread_* functions                         */
 # include <time.h>        /* struct timespec (for pthread_cond_timedwait)    */
+# include <limits.h>
 
 
 /* ========================================================================= */
@@ -61,6 +62,8 @@ long get_time_ms();
 void launch_threads(t_sim *sim);
 t_coder *innit_coders(t_sim* sim);
 void *routine(void *sim);
+long    ft_atoi(const char *nptr);
+int     ft_strlen(const char *str);
 
 /* ========================================================================= */
 /*                           HEAP / PRIORITY QUEUE                          */

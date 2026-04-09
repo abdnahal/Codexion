@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:15:56 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/09 11:17:27 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/09 14:40:55 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,13 +63,13 @@ int main(int ac, char **av)
     long *vars[] = {&coders, &burnout, &to_compile,
         &to_debug, &to_refactor, &compiles_req,
     &cooldown};
-    char *sc[] = {&scheduler};
+    char **sc = &scheduler;
     if (ac != 9)
         ft_error("Missing arguments");
 
     for (i = 0; i < 7; i++)
     {
-        *(vars[i]) = atoi(av[i+1]);
+        *(vars[i]) = ft_atoi(av[i+1]);
     }
     *sc = av[i];
     sim = malloc(sizeof(t_sim));
