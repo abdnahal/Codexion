@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/08 16:20:00 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/09 11:15:16 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -223,7 +223,7 @@ typedef struct s_args
 */
 typedef struct s_sim
 {
-    t_args          args;
+    t_args          *args;
     long            start_time;
     t_coder         *coders;
     t_dongle        *dongles;

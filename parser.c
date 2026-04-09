@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:15:56 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/08 16:18:39 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/09 11:17:27 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,12 +36,13 @@ t_coder *innit_coders(t_sim *sim)
     t_coder *coders;
     int i;
     
-    sim->coders = malloc(sizeof(t_coder) * args->num_coders);
+    sim->coders = malloc(sizeof(t_coder) * sim->args->num_coders);
     if (coders == NULL)
         return NULL;
-    while (i < args->num_coders)
+    while (i < sim->args->num_coders)
     {
         coders[i].id = i+1;
+        i++;
     }
     return sim->coders;
 }
