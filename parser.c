@@ -6,55 +6,87 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:15:56 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/09 14:40:55 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/10 11:38:12 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-t_args *innit(long **vars, char **sc)
+int innit(long **vars, char **sc)
 {
-    struct s_args *args = malloc(sizeof(t_args));
-    if (args == NULL)
+    t_sim *sim;
+    
+    sim = malloc(sizeof(t_sim));
+    
+    if (sim == NULL)
         return NULL;
-    args->num_coders = *(vars[0]);
-    args->time_to_burnout = *(vars[1]);
-    args->time_to_compile = *(vars[2]);
-    args->time_to_debug = *(vars[3]);
-    args->time_to_refactor = *(vars[4]);
-    args->compiles_required = *(vars[5]);
-    args->dongle_cooldown = *(vars[6]);
+    sim->args->num_coders = *(vars[0]);
+    sim->args->time_to_burnout = *(vars[1]);
+    sim->args->time_to_compile = *(vars[2]);
+    sim->args->time_to_debug = *(vars[3]);
+    sim->args->time_to_refactor = *(vars[4]);
+    sim->args->compiles_required = *(vars[5]);
+    sim->args->dongle_cooldown = *(vars[6]);
     if (strcmp(*sc, "fifo"))
-        args->scheduler = FIFO;
+        sim->args->scheduler = FIFO;
     else
-        args->scheduler = EDF;
-    return args;
+        sim->args->scheduler = EDF;
+    if (!innit_coders(sim) || !init_dongles(sim))
+        return 0;
+    bind_coder_dongles(sim);
+    return 1;
 }
 
-t_coder *innit_coders(t_sim *sim)
+int     init_dongles(t_sim *sim)
+{
+    int i;
+    
+    sim->dongles = malloc(sizeof(t_dongle) * sim->args->num_coders);
+    if (!sim->dongles)
+        return 0;
+    i = 0;
+    while (i < sim->args->num_coders)
+    {
+        sim->dongles[i].id = i+1;
+        sim->dongles[i].is_taken = 0;
+        i++;
+    }
+    return 1;
+}
+
+int innit_coders(t_sim *sim)
 {
     t_coder *coders;
     int i;
     
     sim->coders = malloc(sizeof(t_coder) * sim->args->num_coders);
     if (coders == NULL)
-        return NULL;
+        return 0;
     while (i < sim->args->num_coders)
     {
         coders[i].id = i+1;
         i++;
     }
-    return sim->coders;
+    return 1;
+}
+
+void    bind_coder_dongles(t_sim *sim)
+{
+    int i;
+    
+    i = 0;
+    while (i < sim->args->num_coders - 1)
+    {
+        sim->coders[i].left_dongle = &sim->dongles[i];
+        sim->coders[i].right_dongle = &sim->dongles[i+1];
+    }
+    sim->coders[i].left_dongle = &sim->dongles[i];
+    sim->coders[i].right_dongle = &sim->dongles[0];
 }
 
 int main(int ac, char **av)
 {
-    long coders;
-    long burnout;
-    long to_compile;
-    long to_debug;
-    long to_refactor;
-    long compiles_req;
+    long coders, (burnout), (to_compile), (to_debug), (to_refactor), (compiles_req);
     long cooldown;
     char *scheduler;
     int i;
@@ -66,16 +98,14 @@ int main(int ac, char **av)
     char **sc = &scheduler;
     if (ac != 9)
         ft_error("Missing arguments");
-
-    for (i = 0; i < 7; i++)
+    i = 0;
+    while (i < 7)
     {
         *(vars[i]) = ft_atoi(av[i+1]);
+        i++;
     }
     *sc = av[i];
-    sim = malloc(sizeof(t_sim));
-    sim->args = innit(vars, sc);
-    //printf("%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n", args->num_coders, args->time_to_burnout, args->time_to_compile, args->time_to_debug, args->time_to_refactor, args->compiles_required, args->dongle_cooldown, args->scheduler);
-    sim->coders = innit_coders(sim);
-    launch_threads(sim);
+    if (!innit(vars, sc))
+        return 0;
     return 1;
 }

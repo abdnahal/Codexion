@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/09 14:40:22 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/10 11:30:17 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,10 +60,11 @@ typedef struct s_args       t_args;
 void ft_error(char *str);
 long get_time_ms();
 void launch_threads(t_sim *sim);
-t_coder *innit_coders(t_sim* sim);
+int innit_coders(t_sim* sim);
 void *routine(void *sim);
 long    ft_atoi(const char *nptr);
 int     ft_strlen(const char *str);
+t_sim *innit(long **vars, char **sc);
 
 /* ========================================================================= */
 /*                           HEAP / PRIORITY QUEUE                          */

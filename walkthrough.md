@@ -105,7 +105,7 @@ void    make_timespec_from_ms(struct timespec *ts, long abs_ms);
 ```text
 void    log_event(t_sim *sim, int coder_id, const char *msg);
 void    log_taken_dongle(t_coder *coder, int dongle_id);
-void    log_compile(t_coder *coder);
+void    l og_compile(t_coder *coder);
 void    log_debug(t_coder *coder);
 void    log_refactor(t_coder *coder);
 void    log_burnout(t_coder *coder);
