@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/10 11:30:17 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/10 12:17:47 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,13 @@ void *routine(void *sim);
 long    ft_atoi(const char *nptr);
 int     ft_strlen(const char *str);
 t_sim *innit(long **vars, char **sc);
+long    scheduler_priority_for_waiter(const t_sim *sim, const t_coder *coder, long request_ts);
+t_heap  *heap_init(t_sim *sim, int initial_capacity);
+void    heap_destroy(t_heap *heap);
+int     heap_push(t_heap *heap, t_waiter w);
+int     heap_pop(t_heap *heap, t_waiter *out);
+int     heap_peek(const t_heap *heap, t_waiter *out);
+int     heap_remove_coder(t_heap *heap, int coder_id);
 
 /* ========================================================================= */
 /*                           HEAP / PRIORITY QUEUE                          */
