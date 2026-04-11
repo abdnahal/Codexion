@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/10 12:17:47 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/10 16:39:24 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,10 +61,12 @@ void ft_error(char *str);
 long get_time_ms();
 void launch_threads(t_sim *sim);
 int innit_coders(t_sim* sim);
-void *routine(void *sim);
+void *coder_routine(void *sim);
 long    ft_atoi(const char *nptr);
 int     ft_strlen(const char *str);
-t_sim *innit(long **vars, char **sc);
+int innit(long **vars, char **sc, t_sim *sim);
+int     init_dongles(t_sim *sim);
+void    bind_coder_dongles(t_sim *sim);
 long    scheduler_priority_for_waiter(const t_sim *sim, const t_coder *coder, long request_ts);
 t_heap  *heap_init(t_sim *sim, int initial_capacity);
 void    heap_destroy(t_heap *heap);
@@ -72,6 +74,7 @@ int     heap_push(t_heap *heap, t_waiter w);
 int     heap_pop(t_heap *heap, t_waiter *out);
 int     heap_peek(const t_heap *heap, t_waiter *out);
 int     heap_remove_coder(t_heap *heap, int coder_id);
+void free_all(t_sim *sim);
 
 /* ========================================================================= */
 /*                           HEAP / PRIORITY QUEUE                          */

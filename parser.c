@@ -6,20 +6,15 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:15:56 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/10 11:38:12 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/10 16:51:29 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-int innit(long **vars, char **sc)
+int innit(long **vars, char **sc, t_sim *sim)
 {
-    t_sim *sim;
-    
-    sim = malloc(sizeof(t_sim));
-    
-    if (sim == NULL)
-        return NULL;
+    sim->args = malloc(sizeof(t_args));
     sim->args->num_coders = *(vars[0]);
     sim->args->time_to_burnout = *(vars[1]);
     sim->args->time_to_compile = *(vars[2]);
@@ -29,8 +24,10 @@ int innit(long **vars, char **sc)
     sim->args->dongle_cooldown = *(vars[6]);
     if (strcmp(*sc, "fifo"))
         sim->args->scheduler = FIFO;
-    else
+    else if (strcmp(*sc, "edf"))
         sim->args->scheduler = EDF;
+    else
+        return 0;
     if (!innit_coders(sim) || !init_dongles(sim))
         return 0;
     bind_coder_dongles(sim);
@@ -56,15 +53,15 @@ int     init_dongles(t_sim *sim)
 
 int innit_coders(t_sim *sim)
 {
-    t_coder *coders;
     int i;
     
     sim->coders = malloc(sizeof(t_coder) * sim->args->num_coders);
-    if (coders == NULL)
+    if (sim->coders == NULL)
         return 0;
+    i = 0;
     while (i < sim->args->num_coders)
     {
-        coders[i].id = i+1;
+        sim->coders[i].id = i+1;
         i++;
     }
     return 1;
@@ -74,14 +71,22 @@ void    bind_coder_dongles(t_sim *sim)
 {
     int i;
     
+    if (sim->args->num_coders == 1)
+    {
+        sim->coders[0].left_dongle = &sim->dongles[0];
+        sim->coders[0].right_dongle = NULL;
+        return ;
+    }
     i = 0;
     while (i < sim->args->num_coders - 1)
     {
         sim->coders[i].left_dongle = &sim->dongles[i];
-        sim->coders[i].right_dongle = &sim->dongles[i+1];
+        if (i+1 < sim->args->num_coders - 1)
+            sim->coders[i].right_dongle = &sim->dongles[i+1];
+        else
+            sim->coders[i].right_dongle = &sim->dongles[0];
+        i++;
     }
-    sim->coders[i].left_dongle = &sim->dongles[i];
-    sim->coders[i].right_dongle = &sim->dongles[0];
 }
 
 int main(int ac, char **av)
@@ -105,7 +110,10 @@ int main(int ac, char **av)
         i++;
     }
     *sc = av[i];
-    if (!innit(vars, sc))
+    sim = malloc(sizeof(t_sim));
+    if (!innit(vars, sc, sim))
         return 0;
+    launch_threads(sim);
+    free_all(sim);
     return 1;
 }

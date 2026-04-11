@@ -6,18 +6,19 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/08 15:34:23 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/09 14:33:49 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/10 16:42:40 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-void *routine(void *sim)
+void    *coder_routine(void *arg)
 {
-    t_sim *sime;
-    
-    sime = (t_sim *)sim;
+    t_args *args;
+        
+    args = (t_args *)arg;
     printf("thread launched\n");
+    printf("Time to compile: %d\n", args->time_to_compile);
     return NULL;
 }
 
@@ -34,7 +35,7 @@ void launch_threads(t_sim *sim)
     i = 0;
     while (i < sim->args->num_coders)
     {
-        pthread_create(&sim->coders[i].thread, NULL, routine, NULL);
+        pthread_create(&sim->coders[i].thread, NULL, coder_routine, sim->args);
         i++;
     }
     i = 0;

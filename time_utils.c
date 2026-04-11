@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 15:13:18 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/06 14:07:12 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/10 16:07:36 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,19 @@
 
 long get_time_ms()
 {
-    long ms;
     struct timeval tv;
 
-    gettimeofday(&tv, NULL);
-    return (long)tv.tv_sec;
+    if (gettimeofday(&tv, NULL) != 0)
+        return (0);
+    return ((tv.tv_sec * 1000L) + (tv.tv_usec / 1000L));
 }
 
 void make_timespec(struct timespec *ts, long future_ms)
 {
-    ts->tv_sec = future_ms;
+    if (!ts)
+        return ;
+    if (future_ms < 0)
+        future_ms = 0;
+    ts->tv_sec = future_ms / 1000L;
+    ts->tv_nsec = (future_ms % 1000L) * 1000000L;
 }

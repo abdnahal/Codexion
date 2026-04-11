@@ -1,273 +1,179 @@
-# Codexion Walkthrough (No Ready-to-Use Code)
+# Codexion Step-by-Step To-Do List
 
-This document is a build roadmap for finishing the project with **only responsibilities, prototypes, and validation checkpoints**.
-
----
-
-## 1) Suggested final file map
-
-You can keep your current files and optionally add small focused files.
-
-### Keep / complete
-- `parser.c` → CLI parsing, numeric checks, scheduler checks, simulation bootstrap.
-- `threads.c` → coder routine, monitor routine, thread launch/join.
-- `time_utils.c` → millisecond time helpers and precise sleeps.
-- `log.c` → synchronized logging only.
-- `utils.c` → errors + cleanup helpers.
-- `codexion.h` → all shared structs, constants, and prototypes.
-
-### Optional split (recommended for clarity)
-- `init.c` → all init functions (sim, coders, dongles, mutexes, cond vars).
-- `dongle_queue.c` → waiter heap/priority queue operations.
-- `scheduler.c` → FIFO/EDF priority calculation.
-- `monitor.c` → burnout and completion checks.
-- `cleanup.c` → destruction/free of all resources.
-
-If your subject requires exactly the listed files, keep all functions in those files but preserve these responsibilities.
+Use this as an execution checklist. Complete in order.
 
 ---
 
-## 2) Core architecture required
+## Current position
 
-- One shared `t_sim`.
-- `num_coders` coder threads.
-- One monitor thread.
-- One dongle object per seat.
-- Per-dongle waiting queue (min-heap) for FIFO/EDF arbitration.
-- Global stop flag (`is_running`) protected by mutex.
-- Global logging mutex to serialize output lines.
+You have already fixed the main parser/allocation issue. The next work should focus on:
 
----
+1. finishing the thread model,
+2. finishing the heap queue,
+3. wiring the dongle scheduler,
+4. adding the monitor stop logic,
+5. then doing cleanup and validation.
 
-## 3) Function prototype checklist (headers only)
-
-> Use these as **targets** in `codexion.h`. Keep names if you want, or rename consistently.
-
-### parser/bootstrap layer
-```text
-int     parse_args(int ac, char **av, t_args *out);
-int     parse_scheduler(const char *s, int *scheduler_out);
-int     parse_positive_long(const char *s, long *out);
-int     parse_positive_int(const char *s, int *out);
-int     init_sim(t_sim *sim, const t_args *args);
-int     init_coders(t_sim *sim);
-int     init_dongles(t_sim *sim);
-void    bind_coder_dongles(t_sim *sim);
-```
-
-### thread lifecycle
-```text
-int     launch_threads(t_sim *sim);
-void    join_threads(t_sim *sim);
-void    *coder_routine(void *arg);
-void    *monitor_routine(void *arg);
-```
-
-### coder action flow
-```text
-int     coder_take_both_dongles(t_coder *coder);
-void    coder_release_both_dongles(t_coder *coder);
-int     take_one_dongle(t_coder *coder, t_dongle *dongle);
-void    release_one_dongle(t_coder *coder, t_dongle *dongle);
-void    coder_do_compile(t_coder *coder);
-void    coder_do_debug(t_coder *coder);
-void    coder_do_refactor(t_coder *coder);
-```
-
-### scheduler / wait-queue
-```text
-long    scheduler_priority_for_waiter(const t_sim *sim, const t_coder *coder, long request_ts);
-int     heap_init(t_heap *heap, int initial_capacity);
-void    heap_destroy(t_heap *heap);
-int     heap_push(t_heap *heap, t_waiter w);
-int     heap_pop(t_heap *heap, t_waiter *out);
-int     heap_peek(const t_heap *heap, t_waiter *out);
-int     heap_remove_coder(t_heap *heap, int coder_id);
-```
-
-### monitor/state helpers
-```text
-int     sim_is_running(t_sim *sim);
-void    sim_stop(t_sim *sim);
-int     all_coders_completed(t_sim *sim);
-int     is_coder_burned_out(t_coder *coder);
-long    coder_deadline_ms(t_coder *coder);
-```
-
-### time + sleep
-```text
-long    get_time_ms(void);
-void    ms_sleep_interruptible(t_sim *sim, long duration_ms);
-void    make_timespec_from_ms(struct timespec *ts, long abs_ms);
-```
-
-### logging
-```text
-void    log_event(t_sim *sim, int coder_id, const char *msg);
-void    log_taken_dongle(t_coder *coder, int dongle_id);
-void    l og_compile(t_coder *coder);
-void    log_debug(t_coder *coder);
-void    log_refactor(t_coder *coder);
-void    log_burnout(t_coder *coder);
-```
-
-### cleanup/errors
-```text
-void    ft_error(const char *msg);
-void    destroy_sim(t_sim *sim);
-void    destroy_coders(t_sim *sim);
-void    destroy_dongles(t_sim *sim);
-void    free_sim_allocations(t_sim *sim);
-```
+If time and basic init are already corrected, start at Step 5 below.
 
 ---
 
-## 4) What each file should do
+## Step 1 — Lock your public API first
 
-## `parser.c`
-- Validate argument count and value domains.
-- Parse scheduler (`fifo` or `edf`).
-- Reject malformed numeric strings.
-- Fill `t_args` only after full validation succeeds.
-- Create and initialize `t_sim` startup path.
+- [ ] In `codexion.h`, make all prototypes match implementations exactly.
+- [ ] Keep one naming style (`init_*` or `innit_*`) and remove duplicates.
+- [ ] Ensure return types are consistent (`int` status vs pointer return).
+- [ ] Add missing prototypes used across files (`init_dongles`, `bind_coder_dongles`, logger helpers, etc.).
 
-## `threads.c`
-- Create all coder threads and monitor thread.
-- Implement `coder_routine` main loop:
-  - acquire dongles,
-  - compile,
-  - release,
-  - debug,
-  - refactor,
-  - stop on global flag or completion.
-- Join threads during shutdown.
-
-## `time_utils.c`
-- Return accurate ms timestamps.
-- Provide interruptible sleep helper (checks stop flag periodically).
-- Provide `timespec` conversion for timed waits.
-
-## `log.c`
-- Own all print output.
-- Lock `log_mutex` around every line.
-- Print relative timestamp (`now - sim->start_time`).
-- Avoid logging regular actions after stop (except terminal burnout line if subject expects it).
-
-## `utils.c`
-- Fatal error helper.
-- Cleanup helpers if you keep file count small.
-
-## `init.c` (optional)
-- Allocate/initialize coders and dongles.
-- Init mutexes/cond vars.
-- Attach left/right dongles per coder.
-
-## `dongle_queue.c` (optional)
-- Heap grow/shrink operations.
-- Compare entries by priority.
-- Remove waiting coder on cancellation/stop.
-
-## `monitor.c` (optional)
-- Poll every `MONITOR_SLEEP_MS`.
-- Burnout detection from `last_compile_start`.
-- Detect all-completed condition.
-- Flip `is_running` and wake waiting threads.
-
-## `cleanup.c` (optional)
-- Destroy every mutex/cond var created.
-- Free arrays in reverse init order.
-- Guarantee no leak on early error path.
+**Exit condition:** project compiles headers cleanly with no conflicting declarations.
 
 ---
 
-## 5) Shared-state locking contract (must be explicit)
+## Step 2 — Fix argument parsing and ownership
 
-- `sim->is_running` ↔ protected by `sim->stop_mutex`.
-- `sim` output ↔ protected by `sim->log_mutex`.
-- each `dongle` fields (`is_taken`, `holder_id`, `released_at`, `waiters`) ↔ protected by that dongle mutex.
-- each coder timing fields (`last_compile_start`, optionally `compile_count`) ↔ protected by `coder->last_compile_mutex`.
+- [ ] In `parser.c`, split parsing from initialization.
+- [ ] Parse CLI values into a local `t_args` (fully validated) before allocation.
+- [ ] Validate scheduler string strictly (`fifo` / `edf`).
+- [ ] Validate numeric domains (positive values, range limits).
+- [ ] Allocate `t_sim` and `t_args` safely, then copy parsed values.
+- [ ] Ensure `main` keeps `t_sim *sim` and passes it to launcher.
 
-Write this contract in comments and respect it everywhere.
+**Exit condition:** invalid input always fails cleanly; valid input builds a usable `t_sim`.
 
----
-
-## 6) FIFO vs EDF behavior target
-
-- **FIFO:** waiter priority = request timestamp (`request_ts`). Smaller is earlier.
-- **EDF:** waiter priority = coder burnout deadline:
-  - `deadline = last_compile_start + time_to_burnout`
-  - smaller deadline means higher urgency.
-
-Heap is min-heap in both modes.
+**Status:** likely done or nearly done if the allocation bug is fixed.
 
 ---
 
-## 7) Incremental validation plan (what to test and when)
+## Step 3 — Complete initialization path
 
-1. **Parsing tests**
-   - wrong argc,
-   - non-numeric values,
-   - invalid scheduler string,
-   - boundary values (`1`, large values).
+- [ ] In `parser.c` (or split init file), finish `init_coders`.
+- [ ] Finish `init_dongles` including per-dongle defaults.
+- [ ] Initialize required mutexes/conds (`stop_mutex`, `log_mutex`, dongle mutex/cond, coder timing mutex).
+- [ ] Finish `bind_coder_dongles` loop and include `i++` progression.
+- [ ] Handle `num_coders == 1` edge case intentionally.
 
-2. **Init tests**
-   - all mutex/cond init succeed,
-   - one-coder edge case wiring,
-   - left/right mapping correctness.
+**Exit condition:** full simulation objects are initialized without UB or leaks on failure.
 
-3. **Time/log tests**
-   - timestamps monotonic,
-   - no interleaved log lines under load.
-
-4. **Thread tests**
-   - all threads created/joined,
-   - stop flag exits loops cleanly.
-
-5. **Scheduler tests**
-   - FIFO ordering deterministic by arrival,
-   - EDF ordering deterministic by deadline,
-   - cooldown enforced before re-acquire.
-
-6. **Monitor tests**
-   - burnout is detected exactly once,
-   - all-completed stops gracefully.
-
-7. **Race/deadlock tests**
-   - high coder count stress run,
-   - no deadlock,
-   - no busy-spin.
-
-8. **Memory/resource tests**
-   - no leaks,
-   - no destroyed-while-locked mutexes,
-   - clean early-failure cleanup.
+**Status:** likely done or nearly done if the invalid write / invalid read errors are gone.
 
 ---
 
-## 8) “Done” checklist
+## Step 4 — Finalize time utilities
 
-- [ ] Parses and validates all subject arguments.
-- [ ] Correct ms timing (not seconds).
-- [ ] Coder + monitor threading stable.
-- [ ] Per-dongle queue with FIFO/EDF behavior.
-- [ ] Burnout detection and global stop.
-- [ ] Cooldown respected.
-- [ ] Serialized logs.
-- [ ] Full cleanup and no leaks.
-- [ ] Handles `num_coders == 1` edge case per subject expectations.
+- [x] `get_time_ms` returns milliseconds.
+- [x] `make_timespec` converts ms to `timespec`.
+- [ ] Add an interruptible sleep helper for action timing.
+- [ ] Use consistent absolute/relative time semantics everywhere.
+
+**Exit condition:** all timing logic uses ms consistently.
+
+**Status:** already started; keep it correct before moving on to thread timing.
 
 ---
 
-## 9) Practical build order
+## Step 5 — Build reliable logging
 
-1) parser + args validation  
-2) init_sim/init_coders/init_dongles  
-3) logging + time utilities  
-4) basic thread launch/join  
-5) dongle acquire/release (without scheduler)  
-6) add heap queue + FIFO  
-7) add EDF mode  
-8) monitor thread burnout/all-completed  
-9) full cleanup and stress validation
+- [ ] In `log.c`, keep one central `log_event` function with `log_mutex`.
+- [ ] Print relative timestamp from `sim->start_time`.
+- [ ] Add wrapper events (taken dongle, compiling, debugging, refactoring, burnout).
+- [ ] Ensure no partial/unfinished logger functions remain.
 
-This order minimizes debugging complexity and makes failures easy to isolate.
+**Exit condition:** no interleaved log lines under thread contention.
+
+**This should be the next real task after parser/init is stable.**
+
+---
+
+## Step 6 — Repair thread creation and routine skeleton
+
+- [ ] Fix `threads.c` function syntax for `coder_routine`.
+- [ ] Pass valid thread args (`&sim->coders[i]` or `sim`, consistently).
+- [ ] Launch all coder threads and join all coder threads.
+- [ ] Add monitor thread launch/join.
+- [ ] Replace placeholder `printf` with logger calls.
+
+**Exit condition:** threads start, run loop skeleton, and exit cleanly.
+
+**This is the main task after logging.**
+
+---
+
+## Step 7 — Implement heap queue fully
+
+- [ ] In `heap.c`, implement `heap_init`, `heap_push`, `heap_pop`, `heap_peek`, `heap_remove_coder`, `heap_destroy`.
+- [ ] Maintain `size` and `capacity` correctly.
+- [ ] Add resize strategy when full.
+- [ ] Do not pre-fill heap with all coders at init.
+
+**Exit condition:** per-dongle wait queue behaves as a correct min-heap.
+
+**Do this before adding FIFO/EDF scheduling behavior.**
+
+---
+
+## Step 8 — Implement dongle acquire/release with scheduling
+
+- [ ] Implement waiting path for one dongle under dongle mutex.
+- [ ] Push waiter with computed priority.
+- [ ] Grant dongle only if waiter is top-priority and cooldown has elapsed.
+- [ ] Implement release path (`is_taken`, `holder_id`, `released_at`, cond broadcast).
+- [ ] Compose two-dongle acquisition/release in deadlock-safe order.
+
+**Exit condition:** no deadlock; queue order respects FIFO/EDF.
+
+**This depends on the heap and thread skeleton being solid.**
+
+---
+
+## Step 9 — Implement monitor and stop behavior
+
+- [ ] Add monitor loop polling every `MONITOR_SLEEP_MS`.
+- [ ] Detect burnout from `last_compile_start`.
+- [ ] Detect all-completed when `compiles_required` reached.
+- [ ] Set `is_running = 0` under `stop_mutex`.
+- [ ] Wake blocked waiters (broadcast on all dongles).
+
+**Exit condition:** simulation stops exactly once on burnout or completion.
+
+**Do this after the scheduler flow works.**
+
+---
+
+## Step 10 — Add cleanup and error path safety
+
+- [ ] Destroy all mutexes/cond vars that were initialized.
+- [ ] Join threads before destroying sync primitives.
+- [ ] Free all allocations (`args`, `coders`, `dongles`, heap entries, `sim`).
+- [ ] Ensure early-failure cleanup path is leak-safe.
+
+**Exit condition:** normal exit and failure exit both clean resources.
+
+**Do this before final testing.**
+
+---
+
+## Step 11 — Validate in this exact order
+
+- [ ] Compile with strict flags and zero warnings.
+- [ ] Bad-input matrix: argc, non-numeric, out-of-range, bad scheduler.
+- [ ] One-coder run.
+- [ ] Multi-coder run.
+- [ ] FIFO ordering check.
+- [ ] EDF ordering check.
+- [ ] Cooldown enforcement check.
+- [ ] Burnout detection check.
+- [ ] `compiles_required` completion check.
+- [ ] Stress and leak checks.
+
+---
+
+## Step 12 — Final done checklist
+
+- [ ] Header/API consistency complete.
+- [ ] Parser/bootstrap robust.
+- [ ] Time and logging correct.
+- [ ] Threading + monitor stable.
+- [ ] Heap and scheduler complete.
+- [ ] Dongle synchronization correct.
+- [ ] Stop logic and cleanup correct.
+- [ ] Validation suite passed.

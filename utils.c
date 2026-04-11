@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:36:43 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/10 11:30:58 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/10 16:42:01 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,4 +51,14 @@ int     ft_strlen(const char *str)
         while (str[i])
                 i++;
         return (i);
+}
+
+void free_all(t_sim *sim)
+{
+        int i;
+        i = 0;
+        free(sim->args);
+        free(sim->coders);
+        free(sim->dongles);
+        free(sim);
 }
