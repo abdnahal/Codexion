@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:15:56 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/10 16:51:29 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/11 14:35:09 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ int innit(long **vars, char **sc, t_sim *sim)
     if (!innit_coders(sim) || !init_dongles(sim))
         return 0;
     bind_coder_dongles(sim);
+    sim->is_running = 1;
     return 1;
 }
 
@@ -113,6 +114,7 @@ int main(int ac, char **av)
     sim = malloc(sizeof(t_sim));
     if (!innit(vars, sc, sim))
         return 0;
+    sim->start_time = get_time_ms();
     launch_threads(sim);
     free_all(sim);
     return 1;

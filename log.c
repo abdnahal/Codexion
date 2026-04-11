@@ -6,13 +6,13 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 15:13:15 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/06 14:23:29 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/11 14:33:40 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-void log_print(t_sim *sim, int coder_id, char *msg)
+void log_event(t_sim *sim, int coder_id, char *msg)
 {
     int time;
     pthread_mutex_lock(&sim->log_mutex);

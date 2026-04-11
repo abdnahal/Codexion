@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/10 16:39:24 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/11 14:38:38 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ typedef struct s_heap       t_heap;
 typedef struct s_args       t_args;
 
 void ft_error(char *str);
+void log_event(t_sim *sim, int coder_id, char *msg);
 long get_time_ms();
 void launch_threads(t_sim *sim);
 int innit_coders(t_sim* sim);
