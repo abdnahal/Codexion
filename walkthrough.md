@@ -6,15 +6,44 @@ Use this as an execution checklist. Complete in order.
 
 ## Current position
 
-You have already fixed the main parser/allocation issue. The next work should focus on:
+The parser/allocation bug is fixed. Your next work should be focused and local:
 
-1. finishing the thread model,
-2. finishing the heap queue,
-3. wiring the dongle scheduler,
-4. adding the monitor stop logic,
-5. then doing cleanup and validation.
+1. make logging safe and complete,
+2. make the thread routine actually use a coder context,
+3. finish the heap as a real priority queue,
+4. wire dongle acquire/release around that queue,
+5. then add monitor stop logic and cleanup.
 
-If time and basic init are already corrected, start at Step 5 below.
+If you want the shortest path, start at Step 5 and do not move forward until logging is stable.
+
+---
+
+## Do next now
+
+### Task A: finish `log.c`
+- [ ] Make one generic logger that locks `log_mutex`, prints one line, and unlocks.
+- [ ] Keep logging relative to `start_time`.
+- [ ] Remove or complete unfinished helpers that lock a mutex and do not unlock it.
+
+### Task B: fix `threads.c` around a coder context
+- [ ] Each thread should receive the coder it controls, not only the shared args.
+- [ ] The routine should read coder fields from that context.
+- [ ] Replace placeholder prints with logger calls.
+
+### Task C: turn `heap.c` into a real queue
+- [ ] Initialize an empty heap.
+- [ ] Track `size` and `capacity`.
+- [ ] Add push, pop, peek, and remove-by-coder behavior.
+
+### Task D: use the heap in dongle acquisition
+- [ ] Push a waiter when a coder wants a dongle.
+- [ ] Grant the dongle only when the waiter is highest priority and cooldown is satisfied.
+- [ ] Broadcast on release.
+
+### Task E: add monitor stop behavior
+- [ ] Poll burnout.
+- [ ] Stop when everyone has compiled enough.
+- [ ] Wake blocked threads on shutdown.
 
 ---
 
@@ -77,24 +106,26 @@ If time and basic init are already corrected, start at Step 5 below.
 - [ ] Print relative timestamp from `sim->start_time`.
 - [ ] Add wrapper events (taken dongle, compiling, debugging, refactoring, burnout).
 - [ ] Ensure no partial/unfinished logger functions remain.
+- [ ] Make sure any helper that locks a mutex also unlocks it on every path.
 
 **Exit condition:** no interleaved log lines under thread contention.
 
-**This should be the next real task after parser/init is stable.**
+**This is the first thing to finish next.**
 
 ---
 
 ## Step 6 — Repair thread creation and routine skeleton
 
 - [ ] Fix `threads.c` function syntax for `coder_routine`.
-- [ ] Pass valid thread args (`&sim->coders[i]` or `sim`, consistently).
+- [ ] Pass valid thread args (`&sim->coders[i]` is the cleanest choice).
 - [ ] Launch all coder threads and join all coder threads.
 - [ ] Add monitor thread launch/join.
 - [ ] Replace placeholder `printf` with logger calls.
+- [ ] Make the routine use `coder->sim` instead of raw shared pointers where possible.
 
 **Exit condition:** threads start, run loop skeleton, and exit cleanly.
 
-**This is the main task after logging.**
+**Do this immediately after logging is stable.**
 
 ---
 
@@ -104,10 +135,11 @@ If time and basic init are already corrected, start at Step 5 below.
 - [ ] Maintain `size` and `capacity` correctly.
 - [ ] Add resize strategy when full.
 - [ ] Do not pre-fill heap with all coders at init.
+- [ ] Decide and document the comparison rule for FIFO and EDF.
 
 **Exit condition:** per-dongle wait queue behaves as a correct min-heap.
 
-**Do this before adding FIFO/EDF scheduling behavior.**
+**This must exist before you can trust dongle scheduling.**
 
 ---
 
