@@ -6,13 +6,13 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:15:56 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/13 12:05:23 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/15 15:22:43 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-int innit(long **vars, char **sc, t_sim *sim)
+int innit(long **vars, char sc[], t_sim *sim)
 {
     sim->args = malloc(sizeof(t_args));
     sim->args->num_coders = *(vars[0]);
@@ -22,9 +22,9 @@ int innit(long **vars, char **sc, t_sim *sim)
     sim->args->time_to_refactor = *(vars[4]);
     sim->args->compiles_required = *(vars[5]);
     sim->args->dongle_cooldown = *(vars[6]);
-    if (strcmp(*sc, "fifo") == 0)
+    if (strcmp(sc, "fifo") == 0)
         sim->args->scheduler = FIFO;
-    else if (strcmp(*sc, "edf") == 0)
+    else if (strcmp(sc, "edf") == 0)
         sim->args->scheduler = EDF;
     else
         return 0;
@@ -46,6 +46,13 @@ int     init_dongles(t_sim *sim)
     {
         sim->dongles[i].id = i+1;
         sim->dongles[i].is_taken = 0;
+        sim->dongles[i].holder_id = 0;
+        sim->dongles[i].released_at = 0;
+        sim->dongles[i].waiters.entries = NULL;
+        sim->dongles[i].waiters.size = 0;
+        sim->dongles[i].waiters.capacity = 0;
+        pthread_mutex_init(&sim->dongles[i].mutex, NULL);
+        pthread_cond_init(&sim->dongles[i].cond, NULL);
         i++;
     }
     return 1;
@@ -79,13 +86,13 @@ void    bind_coder_dongles(t_sim *sim)
         return ;
     }
     i = 0;
-    while (i < sim->args->num_coders - 1)
+    while (i < sim->args->num_coders)
     {
         sim->coders[i].left_dongle = &sim->dongles[i];
-        if (i < sim->args->num_coders)
-            sim->coders[i].right_dongle = &sim->dongles[i+1];
-        else
+        if (i == sim->args->num_coders - 1)
             sim->coders[i].right_dongle = &sim->dongles[0];
+        else
+            sim->coders[i].right_dongle = &sim->dongles[i+1];
         i++;
     }
 }
@@ -94,14 +101,12 @@ int main(int ac, char **av)
 {
     long coders, (burnout), (to_compile), (to_debug), (to_refactor), (compiles_req);
     long cooldown;
-    char *scheduler;
     int i;
     t_sim *sim;
     
     long *vars[] = {&coders, &burnout, &to_compile,
         &to_debug, &to_refactor, &compiles_req,
     &cooldown};
-    char **sc = &scheduler;
     if (ac != 9)
         ft_error("Missing arguments");
     i = 0;
@@ -110,9 +115,8 @@ int main(int ac, char **av)
         *(vars[i]) = ft_atoi(av[i+1]);
         i++;
     }
-    *sc = av[i];
     sim = malloc(sizeof(t_sim));
-    if (!innit(vars, sc, sim))
+    if (!innit(vars, av[8], sim))
         return 0;
     launch_threads(sim);
     free_all(sim);

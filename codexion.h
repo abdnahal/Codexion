@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/10 16:39:24 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/13 17:52:23 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ int innit_coders(t_sim* sim);
 void *coder_routine(void *sim);
 long    ft_atoi(const char *nptr);
 int     ft_strlen(const char *str);
-int innit(long **vars, char **sc, t_sim *sim);
+int innit(long **vars, char *sc, t_sim *sim);
 int     init_dongles(t_sim *sim);
 void    bind_coder_dongles(t_sim *sim);
 long    scheduler_priority_for_waiter(const t_sim *sim, const t_coder *coder, long request_ts);
@@ -75,7 +75,7 @@ int     heap_pop(t_heap *heap, t_waiter *out);
 int     heap_peek(const t_heap *heap, t_waiter *out);
 int     heap_remove_coder(t_heap *heap, int coder_id);
 void free_all(t_sim *sim);
-
+void taken_dongle(t_coder *coder);
 /* ========================================================================= */
 /*                           HEAP / PRIORITY QUEUE                          */
 /* ========================================================================= */

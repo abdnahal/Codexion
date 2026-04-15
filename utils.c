@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:36:43 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/10 16:42:01 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/15 15:23:48 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,20 @@ int     ft_strlen(const char *str)
 void free_all(t_sim *sim)
 {
         int i;
+
+        if (!sim)
+                return ;
         i = 0;
+        if (sim->dongles)
+        {
+                while (sim->args && i < sim->args->num_coders)
+                {
+                        pthread_mutex_destroy(&sim->dongles[i].mutex);
+                        pthread_cond_destroy(&sim->dongles[i].cond);
+                        free(sim->dongles[i].waiters.entries);
+                        i++;
+                }
+        }
         free(sim->args);
         free(sim->coders);
         free(sim->dongles);

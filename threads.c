@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/08 15:34:23 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/13 10:55:35 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/13 17:39:51 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,7 @@ void    *coder_routine(void *coder)
     t_coder *coders;
         
     coders = (t_coder *)coder;
-    printf("thread launched\n");
-    printf("Time to compile: %d\n", coders->state);
+    taken_dongle(coders);
     return NULL;
 }
 
