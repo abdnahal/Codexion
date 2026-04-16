@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/13 17:52:23 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/16 14:54:13 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -246,5 +246,6 @@ typedef struct s_sim
     pthread_mutex_t stop_mutex;
     pthread_mutex_t log_mutex;
 }               t_sim;
+
 
 #endif
