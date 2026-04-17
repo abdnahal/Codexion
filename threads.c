@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/08 15:34:23 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/16 16:06:48 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/17 10:11:19 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,19 +15,13 @@
 void    *coder_routine(void *coder)
 {
     t_coder *coders;
-        
+    
     coders = (t_coder *)coder;
-    while (1)
-    {
-        if (!take_dongle(coders));
-            break;
-        if (!compile(coders))
-            break;
-        if (!debbug(coders))
-            break;
-        if (!refactor(coders))
-            break;
-    }
+    taken_dongle(coders);
+    compile(coders);
+    debbug(coders);
+    refactor(coders);
+    burnout(coders);
     return NULL;
 }
 

@@ -3,7 +3,7 @@ CC = cc -Wall -Wextra -Werror
 SRC = *.c
 
 all:
-	$(CC) $(SRC) $(NAME)
+	$(CC) $(SRC) -o $(NAME)
 
 clean:
 	$(Rm)

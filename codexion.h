@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/16 14:54:13 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/17 10:09:18 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,19 @@ int     heap_peek(const t_heap *heap, t_waiter *out);
 int     heap_remove_coder(t_heap *heap, int coder_id);
 void free_all(t_sim *sim);
 void taken_dongle(t_coder *coder);
+int sim_is_running(t_sim *sim);
+ void log_print(t_sim *sim, int coder_id, char *msg);
+ int can_take_dongle(t_dongle *dongle, int coder_id, long now, long cooldown);
+ int queue_waiter(t_dongle *dongle, t_coder *coder);
+ int acquire_one_dongle(t_coder *coder, t_dongle *dongle);
+ void release_one_dongle(t_dongle *dongle);
+void taken_dongle(t_coder *coder);
+int compile(t_coder *coder);
+void debbug(t_coder *coder);
+void refactor(t_coder *coder);
+void burnout(t_coder *coder);
+
+
 /* ========================================================================= */
 /*                           HEAP / PRIORITY QUEUE                          */
 /* ========================================================================= */

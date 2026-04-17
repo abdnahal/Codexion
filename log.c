@@ -6,13 +6,13 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 15:13:15 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/15 15:22:27 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/17 10:18:00 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static int sim_is_running(t_sim *sim)
+int sim_is_running(t_sim *sim)
 {
     int running;
 
@@ -22,7 +22,7 @@ static int sim_is_running(t_sim *sim)
     return running;
 }
 
-static void log_print(t_sim *sim, int coder_id, char *msg)
+void log_print(t_sim *sim, int coder_id, char *msg)
 {
     long now;
 
@@ -35,7 +35,7 @@ static void log_print(t_sim *sim, int coder_id, char *msg)
     pthread_mutex_unlock(&sim->log_mutex);
 }
 
-static int can_take_dongle(t_dongle *dongle, int coder_id, long now, long cooldown)
+int can_take_dongle(t_dongle *dongle, int coder_id, long now, long cooldown)
 {
     t_waiter top;
 
@@ -48,7 +48,7 @@ static int can_take_dongle(t_dongle *dongle, int coder_id, long now, long cooldo
     return (top.coder_id == coder_id);
 }
 
-static int queue_waiter(t_dongle *dongle, t_coder *coder)
+int queue_waiter(t_dongle *dongle, t_coder *coder)
 {
     t_waiter waiter;
     long request_ts;
@@ -60,7 +60,7 @@ static int queue_waiter(t_dongle *dongle, t_coder *coder)
     return heap_push(&dongle->waiters, waiter);
 }
 
-static int acquire_one_dongle(t_coder *coder, t_dongle *dongle)
+int acquire_one_dongle(t_coder *coder, t_dongle *dongle)
 {
     long now;
 
@@ -89,7 +89,7 @@ static int acquire_one_dongle(t_coder *coder, t_dongle *dongle)
     return 0;
 }
 
-static void release_one_dongle(t_dongle *dongle)
+void release_one_dongle(t_dongle *dongle)
 {
     pthread_mutex_lock(&dongle->mutex);
     dongle->is_taken = 0;

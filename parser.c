@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:15:56 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/15 15:22:43 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/17 10:14:24 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 int innit(long **vars, char sc[], t_sim *sim)
 {
+    sim->start_time = get_time_ms();
     sim->args = malloc(sizeof(t_args));
     sim->args->num_coders = *(vars[0]);
     sim->args->time_to_burnout = *(vars[1]);
