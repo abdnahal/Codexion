@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/08 15:34:23 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/17 10:11:19 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/17 12:08:01 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@ void    *coder_routine(void *coder)
     
     coders = (t_coder *)coder;
     taken_dongle(coders);
-    compile(coders);
     debbug(coders);
     refactor(coders);
     burnout(coders);
@@ -41,6 +40,7 @@ void launch_threads(t_sim *sim)
         pthread_create(&sim->coders[i].thread, NULL, coder_routine, &sim->coders[i]);
         i++;
     }
+    sim->is_running = 1;
     i = 0;
     while (i < sim->args->num_coders)
     {
