@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:36:43 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/15 15:23:48 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/18 14:23:51 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,9 +60,9 @@ void free_all(t_sim *sim)
         if (!sim)
                 return ;
         i = 0;
-        if (sim->dongles)
+        if (sim->dongles && sim->args)
         {
-                while (sim->args && i < sim->args->num_coders)
+                while (i < sim->args->num_coders)
                 {
                         pthread_mutex_destroy(&sim->dongles[i].mutex);
                         pthread_cond_destroy(&sim->dongles[i].cond);
@@ -74,4 +74,14 @@ void free_all(t_sim *sim)
         free(sim->coders);
         free(sim->dongles);
         free(sim);
+}
+
+int sim_is_running(t_sim *sim)
+{
+    int running;
+
+    pthread_mutex_lock(&sim->stop_mutex);
+    running = sim->is_running;
+    pthread_mutex_unlock(&sim->stop_mutex);
+    return running;
 }

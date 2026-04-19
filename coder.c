@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/16 16:22:24 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/17 10:10:48 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/18 14:26:07 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,14 @@ int compile(t_coder *coder)
     secs = get_time_ms() - coder->last_compile_start;
     if (secs >= coder->sim->args->time_to_burnout)
     {
-        burnout(coder);
         pthread_mutex_unlock(&coder->last_compile_mutex);
+        burnout(coder);
         return 0;
     }
     coder->state = CODER_COMPILING;
-    printf("%ld %d is compiling\n", get_time_ms() - coder->sim->start_time, coder->id);
+    coder->compile_count++;
+    coder->last_compile_start = get_time_ms();
+    log_print(coder->sim, coder->id, "is compiling");
     pthread_mutex_unlock(&coder->last_compile_mutex);
     return 1;
 }

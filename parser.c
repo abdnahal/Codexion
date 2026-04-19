@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:15:56 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/17 11:51:55 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/18 14:12:38 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 int innit(long **vars, char sc[], t_sim *sim)
 {
     sim->start_time = get_time_ms();
+    sim->is_running = 1;
     sim->args = malloc(sizeof(t_args));
     sim->args->num_coders = *(vars[0]);
     sim->args->time_to_burnout = *(vars[1]);
@@ -69,8 +70,12 @@ int innit_coders(t_sim *sim)
     i = 0;
     while (i < sim->args->num_coders)
     {
+        sim->coders[i].state = CODER_WAITING;
+        sim->coders[i].compile_count = 0;
+        sim->coders[i].last_compile_start = sim->start_time;
         sim->coders[i].id = i+1;
         sim->coders[i].sim = sim;
+        pthread_mutex_init(&sim->coders[i].last_compile_mutex, NULL);
         i++;
     }
     return 1;
@@ -117,6 +122,8 @@ int main(int ac, char **av)
         i++;
     }
     sim = malloc(sizeof(t_sim));
+    pthread_mutex_init(&sim->log_mutex, NULL);
+    pthread_mutex_init(&sim->stop_mutex, NULL);
     if (!innit(vars, av[8], sim))
         return 0;
     launch_threads(sim);

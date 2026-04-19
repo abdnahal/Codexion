@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/08 15:34:23 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/17 12:08:01 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/19 10:34:40 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,18 +17,15 @@ void    *coder_routine(void *coder)
     t_coder *coders;
     
     coders = (t_coder *)coder;
-    taken_dongle(coders);
-    debbug(coders);
-    refactor(coders);
-    burnout(coders);
+    while (sim_is_running(coders->sim))
+    {
+        taken_dongle(coders);
+        compile(coders);
+        debbug(coders);
+        refactor(coders);
+    }
     return NULL;
 }
-
-// void take_dongle(t_sim *sim)
-// {
-//     if (sim->coders->right_dongle->is_taken)
-// }
-
 
 void launch_threads(t_sim *sim)
 {
@@ -40,11 +37,38 @@ void launch_threads(t_sim *sim)
         pthread_create(&sim->coders[i].thread, NULL, coder_routine, &sim->coders[i]);
         i++;
     }
-    sim->is_running = 1;
     i = 0;
     while (i < sim->args->num_coders)
     {
         pthread_join(sim->coders[i].thread, NULL);
         i++;
     }
+    pthread_create(&sim->monitor_thread, NULL, monitor_thread, sim);
+    pthread_join(sim->monitor_thread, NULL);
+}
+
+void *monitor_thread(void *sime)
+{
+    t_sim *sim;
+    int i;
+    int count;
+    
+    sim = (t_sim *)sime;
+    while (1)
+    {
+        i = 0;
+        count = 0;
+        while (i < sim->args->num_coders)
+        {
+            if (sim->coders[i].compile_count == sim->args->compiles_required || get_time_ms() - sim->start_time >= sim->args->time_to_burnout)
+                count++;
+            i++;
+        }
+        if (count == sim->args->num_coders)
+        {
+            sim->is_running = 0;
+            break;
+        }
+    }
+    return NULL;
 }

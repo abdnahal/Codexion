@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/17 10:09:18 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/19 10:33:27 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ int compile(t_coder *coder);
 void debbug(t_coder *coder);
 void refactor(t_coder *coder);
 void burnout(t_coder *coder);
-
+void *monitor_thread(void *sime);
 
 /* ========================================================================= */
 /*                           HEAP / PRIORITY QUEUE                          */

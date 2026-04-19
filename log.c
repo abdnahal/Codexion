@@ -6,21 +6,11 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 15:13:15 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/17 12:08:35 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/18 14:22:28 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
-
-int sim_is_running(t_sim *sim)
-{
-    int running;
-
-    pthread_mutex_lock(&sim->stop_mutex);
-    running = sim->is_running;
-    pthread_mutex_unlock(&sim->stop_mutex);
-    return running;
-}
 
 void log_print(t_sim *sim, int coder_id, char *msg)
 {
