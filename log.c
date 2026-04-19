@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 15:13:15 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/18 14:22:28 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/19 11:03:11 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,9 +79,10 @@ int acquire_one_dongle(t_coder *coder, t_dongle *dongle)
     return 0;
 }
 
-void release_one_dongle(t_dongle *dongle)
+void release_one_dongle(t_dongle *dongle, long cooldown)
 {
     pthread_mutex_lock(&dongle->mutex);
+    usleep(cooldown * 1000);
     dongle->is_taken = 0;
     dongle->holder_id = 0;
     dongle->released_at = get_time_ms();
@@ -99,7 +100,7 @@ void taken_dongle(t_coder *coder)
     if (!coder->right_dongle)
     {
         if (acquire_one_dongle(coder, coder->left_dongle))
-            release_one_dongle(coder->left_dongle);
+            release_one_dongle(coder->left_dongle, coder->sim->args->dongle_cooldown);
         return ;
     }
     first = coder->left_dongle;
@@ -113,9 +114,9 @@ void taken_dongle(t_coder *coder)
         return ;
     if (!acquire_one_dongle(coder, second))
     {
-        release_one_dongle(first);
+        release_one_dongle(first, coder->sim->args->dongle_cooldown);
         return ;
     }
-    release_one_dongle(second);
-    release_one_dongle(first);
+    release_one_dongle(second, coder->sim->args->dongle_cooldown);
+    release_one_dongle(first, coder->sim->args->dongle_cooldown);
 }

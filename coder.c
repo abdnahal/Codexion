@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/16 16:22:24 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/18 14:26:07 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/19 10:47:37 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int compile(t_coder *coder)
     int secs;
     
     pthread_mutex_lock(&coder->last_compile_mutex);
-    secs = get_time_ms() - coder->last_compile_start;
+    secs = get_time_ms() - coder->sim->start_time;
     if (secs >= coder->sim->args->time_to_burnout)
     {
         pthread_mutex_unlock(&coder->last_compile_mutex);

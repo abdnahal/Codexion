@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/19 10:33:27 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/19 11:01:26 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ int sim_is_running(t_sim *sim);
  int can_take_dongle(t_dongle *dongle, int coder_id, long now, long cooldown);
  int queue_waiter(t_dongle *dongle, t_coder *coder);
  int acquire_one_dongle(t_coder *coder, t_dongle *dongle);
- void release_one_dongle(t_dongle *dongle);
+ void release_one_dongle(t_dongle *dongle, long cooldown);
 void taken_dongle(t_coder *coder);
 int compile(t_coder *coder);
 void debbug(t_coder *coder);
@@ -89,19 +89,7 @@ void refactor(t_coder *coder);
 void burnout(t_coder *coder);
 void *monitor_thread(void *sime);
 
-/* ========================================================================= */
-/*                           HEAP / PRIORITY QUEUE                          */
-/* ========================================================================= */
 
-/*
-** t_waiter: one entry in a dongle's waiting queue.
-**
-** coder_id   - which coder is waiting (1-indexed, matches log output)
-** priority   - the value used for heap ordering:
-**              FIFO → timestamp of request arrival (smaller = earlier)
-**              EDF  → burnout deadline (smaller = more urgent)
-** coder      - direct pointer to the coder struct for fast access
-*/
 typedef struct s_waiter
 {
     int         coder_id;
