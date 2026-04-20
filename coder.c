@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/16 16:22:24 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/19 17:42:38 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/20 13:27:19 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ void debbug(t_coder *coder)
     pthread_mutex_lock(&coder->last_compile_mutex);
     coder->state = CODER_DEBUGGING;
     log_print(coder->sim, coder->id, "is debugging");
-    pthread_mutex_unlock(&coder->last_compile_mutex);
+    pthread_mutex_unlock(&coder->last_compile_mutex); 
 }
 
 void refactor(t_coder *coder)

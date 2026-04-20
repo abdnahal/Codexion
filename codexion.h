@@ -6,30 +6,24 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/19 17:24:09 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/20 13:06:13 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CODEXION_H
 # define CODEXION_H
 
-/* ========================================================================= */
-/*                              INCLUDES                                     */
-/* ========================================================================= */
 
-# include <stdio.h>       /* printf, fprintf                                 */
-# include <stdlib.h>      /* malloc, free, atoi, exit                        */
-# include <string.h>      /* memset, strlen, strcmp                          */
-# include <unistd.h>      /* write, usleep                                   */
-# include <sys/time.h>    /* gettimeofday, struct timeval                    */
-# include <pthread.h>     /* all pthread_* functions                         */
-# include <time.h>        /* struct timespec (for pthread_cond_timedwait)    */
+# include <stdio.h> 
+# include <stdlib.h>     
+# include <string.h>    
+# include <unistd.h>    
+# include <sys/time.h>   
+# include <pthread.h>     
+# include <time.h>        
 # include <limits.h>
 
 
-/* ========================================================================= */
-/*                              CONSTANTS                                    */
-/* ========================================================================= */
 
 # define FIFO               0
 # define EDF                1
@@ -43,12 +37,10 @@
 # define SUCCESS            0
 # define FAILURE            1
 
-# define MONITOR_SLEEP_MS   1    /* how often monitor checks burnout (ms)   */
-# define HEAP_INIT_CAPACITY 8    /* initial heap capacity (grows as needed)  */
+# define MONITOR_SLEEP_MS   1    
+# define HEAP_INIT_CAPACITY 8    
 
-/* ========================================================================= */
-/*                           FORWARD DECLARATIONS                            */
-/* ========================================================================= */
+
 
 typedef struct s_sim        t_sim;
 typedef struct s_coder      t_coder;
@@ -89,6 +81,7 @@ void refactor(t_coder *coder);
 void burnout(t_coder *coder);
 void *monitor_thread(void *sime);
 void stop_simulation(t_sim *sim);
+void make_timespec(struct timespec *ts, long future_ms);
 
 
 typedef struct s_waiter
@@ -98,14 +91,7 @@ typedef struct s_waiter
     t_coder     *coder;
 }               t_waiter;
 
-/*
-** t_heap: a min-heap of t_waiter entries.
-**
-** entries    - the array storing heap nodes
-** size       - current number of elements in the heap
-** capacity   - current allocated size of the entries array
-**              (doubles when full, so we rarely need to realloc)
-*/
+
 typedef struct s_heap
 {
     t_waiter    *entries;
@@ -113,28 +99,7 @@ typedef struct s_heap
     int         capacity;
 }               t_heap;
 
-/* ========================================================================= */
-/*                              DONGLE                                       */
-/* ========================================================================= */
 
-/*
-** t_dongle: represents one USB dongle on the table.
-**
-** id          - dongle index (0-indexed internally)
-** mutex       - protects ALL fields of this struct.
-**               Any thread reading or writing below must hold this lock.
-** cond        - condition variable. Threads call pthread_cond_wait here
-**               while waiting for the dongle to become available.
-**               pthread_cond_broadcast is called on release and shutdown.
-** is_taken    - 1 if a coder currently holds this dongle, 0 if free.
-** holder_id   - which coder currently holds it (for debugging/logging).
-**               Only valid when is_taken == 1.
-** released_at - timestamp (ms) of the last release. Used to enforce
-**               dongle_cooldown. Initialized to 0 (no cooldown at start).
-** waiters     - priority queue of coders waiting for this dongle.
-**               Ordered by FIFO arrival time or EDF deadline depending
-**               on the scheduler. Access always under mutex.
-*/
 typedef struct s_dongle
 {
     int             id;
@@ -146,37 +111,7 @@ typedef struct s_dongle
     t_heap          waiters;
 }               t_dongle;
 
-/* ========================================================================= */
-/*                               CODER                                       */
-/* ========================================================================= */
 
-/*
-** t_coder: represents one coder (one pthread).
-**
-** id                  - coder number, 1 to number_of_coders (as in logs)
-** thread              - the pthread handle, used for pthread_join in cleanup
-** state               - current activity: COMPILING, DEBUGGING, etc.
-**                       Written by coder thread, read by monitor thread.
-**                       Protect with state_mutex if you read/write from
-**                       multiple threads simultaneously.
-** compile_count       - how many times this coder has successfully compiled.
-**                       Written only by the coder's own thread, read by
-**                       the monitor. Use an int and rely on monitor polling
-**                       with its own timing, or protect with a mutex.
-** last_compile_start  - timestamp (ms) of when this coder last STARTED
-**                       compiling (or simulation start if not yet compiled).
-**                       CRITICAL for burnout detection and EDF priority.
-**                       Written by coder thread, read by monitor.
-**                       Protect with last_compile_mutex.
-** last_compile_mutex  - protects last_compile_start and compile_count
-**                       from concurrent read/write between coder and monitor.
-** left_dongle         - pointer to the dongle on this coder's left side.
-**                       Coder N's left dongle is dongles[N-1] (0-indexed).
-** right_dongle        - pointer to the dongle on this coder's right side.
-**                       Coder N's right dongle is dongles[N] (0-indexed).
-** sim                 - back-pointer to the shared simulation state.
-**                       Gives access to all global params and stop flag.
-*/
 typedef struct s_coder
 {
     int             id;
@@ -190,15 +125,8 @@ typedef struct s_coder
     t_sim           *sim;
 }               t_coder;
 
-/* ========================================================================= */
-/*                            PARSED ARGUMENTS                               */
-/* ========================================================================= */
 
-/*
-** t_args: holds the validated, converted command-line arguments.
-** Populated by validate.c before any initialization begins.
-** All time values are stored in milliseconds as long integers.
-*/
+
 typedef struct s_args
 {
     int     num_coders;
@@ -208,35 +136,10 @@ typedef struct s_args
     long    time_to_refactor;
     int     compiles_required;
     long    dongle_cooldown;
-    int     scheduler;              /* FIFO or EDF constant */
+    int     scheduler;              
 }               t_args;
 
-/* ========================================================================= */
-/*                          SIMULATION STATE                                 */
-/* ========================================================================= */
 
-/*
-** t_sim: the master struct passed to every thread.
-** One instance exists for the entire program lifetime.
-**
-** args             - a copy of the parsed arguments. Read-only after init.
-** start_time       - simulation start timestamp in ms. Used to compute
-**                    relative timestamps for all log output.
-** coders           - heap-allocated array of t_coder, length = num_coders.
-** dongles          - heap-allocated array of t_dongle, length = num_coders.
-**                    (special case: 1 coder → 1 dongle)
-** monitor_thread   - pthread handle for the monitor. Joined in cleanup.
-**
-** is_running       - shared stop flag. Set to 0 by monitor on burnout or
-**                    when all coders reach compiles_required. Coder threads
-**                    check this in their main loop and after waking from
-**                    cond waits. MUST be read/written under stop_mutex.
-** stop_mutex       - protects is_running.
-**
-** log_mutex        - protects all output. Every printf/write in the
-**                    entire program must lock this first to prevent
-**                    interleaved log lines.
-*/
 typedef struct s_sim
 {
     t_args          *args;

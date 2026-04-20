@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/08 15:34:23 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/20 12:21:20 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/20 13:18:12 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,6 @@ void launch_threads(t_sim *sim)
         pthread_join(sim->coders[i].thread, NULL);
         i++;
     }
-    free_all(sim);
 }
 
 void *monitor_thread(void *sime)
@@ -70,7 +69,10 @@ void *monitor_thread(void *sime)
             i++;
         }
         if (count == sim->args->num_coders)
+        {
             stop_simulation(sim);
+            break;
+        }
         usleep(MONITOR_SLEEP_MS * 1000);
     }
     return NULL;

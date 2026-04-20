@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 15:13:15 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/20 12:23:46 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/20 13:01:43 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,8 @@ void taken_dongle(t_coder *coder)
     if (!acquire_one_dongle(coder, second))
     {
         release_one_dongle(first, coder->sim->args->dongle_cooldown);
-        pthread_cond_timedwait(&second->cond, NULL, )
+        // make_timespec(&time, coder->sim->args->dongle_cooldown + 10);
+        // pthread_cond_timedwait(&second->cond, &second->mutex, &time);
         return ;
     }
     release_one_dongle(second, coder->sim->args->dongle_cooldown);
