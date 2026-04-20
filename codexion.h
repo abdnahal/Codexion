@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/19 11:01:26 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/19 17:24:09 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,7 @@ void debbug(t_coder *coder);
 void refactor(t_coder *coder);
 void burnout(t_coder *coder);
 void *monitor_thread(void *sime);
+void stop_simulation(t_sim *sim);
 
 
 typedef struct s_waiter

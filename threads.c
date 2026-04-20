@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/08 15:34:23 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/19 11:02:46 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/20 12:21:20 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,14 @@
 void    *coder_routine(void *coder)
 {
     t_coder *coders;
+    long now;
     
     coders = (t_coder *)coder;
     while (sim_is_running(coders->sim))
     {
+        now = get_time_ms();
+        if (now >= coders->sim->args->time_to_burnout + coders->last_compile_start)
+            burnout(coders);
         taken_dongle(coders);
         compile(coders);
         debbug(coders);
@@ -45,6 +49,7 @@ void launch_threads(t_sim *sim)
         pthread_join(sim->coders[i].thread, NULL);
         i++;
     }
+    free_all(sim);
 }
 
 void *monitor_thread(void *sime)
@@ -60,16 +65,30 @@ void *monitor_thread(void *sime)
         count = 0;
         while (i < sim->args->num_coders)
         {
-            if (sim->coders[i].compile_count == sim->args->compiles_required || get_time_ms() - sim->start_time >= sim->args->time_to_burnout)
+            if (sim->coders[i].compile_count == sim->args->compiles_required)
                 count++;
             i++;
         }
         if (count == sim->args->num_coders)
-        {
-            sim->is_running = 0;
-            break;
-        }
+            stop_simulation(sim);
         usleep(MONITOR_SLEEP_MS * 1000);
     }
     return NULL;
+}
+
+void stop_simulation(t_sim *sim)
+{
+    int i;
+
+    i = 0;
+    pthread_mutex_lock(&sim->stop_mutex);
+    sim->is_running = 0;
+    while (i < sim->args->num_coders)
+    {
+        pthread_mutex_lock(&sim->dongles[i].mutex);
+        pthread_cond_broadcast(&sim->dongles[i].cond);
+        pthread_mutex_unlock(&sim->dongles[i].mutex);
+        i++;
+    }
+    pthread_mutex_unlock(&sim->stop_mutex);
 }
