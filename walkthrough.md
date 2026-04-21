@@ -1,172 +1,150 @@
-# Codexion Remaining To-Do (Updated)
+# Codexion Project Completion TODO (Step-by-Step)
 
-Current status:
-- `make` currently builds successfully.
-- Core dongle queue helpers and heap operations exist.
-- Major initialization bugs from earlier are mostly fixed.
-- Current blocker: runtime still hangs in single-coder mode and does not terminate cleanly.
-- Monitor code now exists but is wired in the wrong lifecycle order.
+Use this list in order. Each item below is implementation work that must be finished before final validation.
 
-Use this checklist in order.
+## 1) Normalize naming and public API
 
----
+- [x] Rename typoed symbols consistently
 
-## 0) Immediate fixes for current hang (do this first)
+Steps:
+1. Rename `innit` to `init` in declarations, definitions, and all call sites.
+2. Rename `innit_coders` to `init_coders` everywhere.
+3. Rename `debbug` to `debug` everywhere.
+4. Rebuild and fix any compile errors from renamed symbols.
 
-Observed behavior:
-- With 1 coder, program prints first cycle then hangs.
-- With multiple coders, threads can run forever because stop flag is never flipped.
+- [x] Clean header declarations
 
-Root causes and required fixes:
-- [ ] Start monitor before joining coder threads (currently monitor starts after coder joins, so it cannot stop them).
-- [ ] In monitor shutdown path, set `sim->is_running = 0` under `stop_mutex` and broadcast every dongle cond var.
-- [ ] Stop condition must use per-coder burnout logic (`last_compile_start + time_to_burnout`), not only `now - start_time`.
-- [ ] Monitor currently busy-spins; add a small sleep (`MONITOR_SLEEP_MS`) to avoid CPU burn.
-- [ ] Fix 1-coder cooldown wait path: avoid waiting forever on `pthread_cond_wait` when no other thread can broadcast.
-- [ ] Use timed waits or a recheck loop for cooldown so a single coder can progress after cooldown expires.
-- [ ] In `coder_routine`, use action return values and break when `compile` fails (burnout).
-- [ ] Add actual action timing (`time_to_compile`, `time_to_debug`, `time_to_refactor`) so simulation advances instead of hot-spinning at ~0 ms.
-- [ ] Protect monitor reads of coder state (`compile_count`/timing fields) with existing mutexes to avoid data races.
+Steps:
+1. Remove duplicate function prototypes from the header.
+2. Keep only public interfaces in the header.
+3. Move internal-only helpers to their `.c` files as `static` functions where possible.
 
-Exit when:
-- 1-coder run no longer deadlocks.
-- simulation terminates deterministically on burnout or completion.
-- joins return without manual interruption.
+## 2) Fix Makefile structure
 
----
+- [x] Implement standard targets and behavior
 
-## 1) API and naming consistency (still pending)
+Steps:
+1. Keep `all` building `Codexion`.
+2. Make `clean` remove only object files.
+3. Add `fclean` to remove binary after `clean`.
+4. Set `re` to call `fclean` then `all`.
+5. Run `make`, `make clean`, `make fclean`, and `make re` to verify behavior.
 
-- [ ] Rename `innit`/`innit_coders` to `init`/`init_coders` everywhere.
-- [ ] Rename `debbug` to `debug` everywhere.
-- [ ] In `codexion.h`, remove duplicate prototype declarations (`taken_dongle` appears twice).
-- [ ] In `codexion.h`, remove internal-only helper prototypes from public header if used only in one `.c` file.
+## 3) Correct thread lifecycle and stop flow
 
-Exit when: one naming style is used everywhere and header is clean.
+- [ ] Make monitor and workers exit deterministically
 
----
+Steps:
+1. In launch flow, create all worker threads first.
+2. Create monitor thread immediately after workers start.
+3. Join worker threads.
+4. Join monitor thread.
+5. Ensure no thread calls `exit()` directly.
 
-## 2) Makefile final fixes (partially done)
+- [ ] Centralize stop logic without freeing in worker context
 
-- [x] Build command uses `-Wall -Wextra -Werror -pthread` and outputs `Codexion`.
-- [ ] `clean` currently removes binary; align with standard split (`clean` objects only, `fclean` removes binary).
-- [ ] Fix `re` target to call make targets, not shell commands.
-- [ ] Add `fclean` target.
-- [ ] Keep `clean` for object files and `fclean` for binary.
+Steps:
+1. Keep `stop_simulation` responsible only for setting stop flag and waking waiters.
+2. Protect stop flag writes with `stop_mutex`.
+3. Broadcast all dongle condition variables during stop.
+4. Remove any `free_all` or process termination calls from worker/monitor threads.
+5. Perform cleanup once from the main control path after joins.
 
-Suggested shape:
-- `all: $(NAME)`
-- `clean: rm -f *.o`
-- `fclean: clean` then remove `$(NAME)`
-- `re: fclean all`
+## 4) Fix coder routine sequencing
 
-Exit when: `make re` works reliably.
+- [ ] Enforce valid action order and early exits
 
----
+Steps:
+1. Make `taken_dongle` return success/failure and check it in routine loop.
+2. If compile step fails (burnout), stop current coder loop immediately.
+3. Do not run debug/refactor after burnout.
+4. Use local variable name `coder` (not `coders`) for clarity.
 
-## 3) Thread loop correctness (important)
+- [ ] Apply action timings
 
-- [x] `coder_routine` now loops while simulation is running.
-- [ ] `coder_routine` still ignores return values from action calls.
-- [ ] Check and use return values from `taken_dongle`, `compile`, `debug`, `refactor`.
-- [ ] Break loop if `compile` returns 0.
-- [ ] Avoid continuing with debug/refactor after burnout.
-- [ ] Rename local variable from `coders` to `coder` for clarity.
+Steps:
+1. Sleep for `time_to_compile` after compile begins.
+2. Sleep for `time_to_debug` after debug begins.
+3. Sleep for `time_to_refactor` after refactor begins.
+4. Re-check stop condition between action phases.
 
-Exit when: loop exits correctly and actions run in valid order only.
+## 5) Fix dongle wait/cooldown behavior
 
----
+- [ ] Prevent cooldown deadlock
 
-## 4) Stop logic and monitor (missing)
+Steps:
+1. Do not sleep while holding dongle mutex.
+2. Keep cooldown enforcement by timestamp (`released_at`) checks.
+3. Replace indefinite wait with timed wait or periodic wakeup in acquire loop.
+4. Re-check stop flag and cooldown readiness after each wake.
 
-- [~] Monitor thread function exists, but lifecycle/order is incorrect.
-- [ ] Start monitor before joining coder threads and join it on shutdown.
-- [ ] On burnout or all-complete, set `sim->is_running = 0` under `stop_mutex`.
-- [ ] Broadcast all dongle cond vars so blocked coders wake up and exit.
-- [ ] Rewrite stop criteria to avoid premature/global burnout checks.
-- [ ] Prevent duplicate/late stop transitions so terminal events are logged once.
+- [ ] Prevent duplicate waiter entries and stale queue state
 
-Exit when: simulation terminates on defined conditions (not infinite loop).
+Steps:
+1. Ensure each coder is queued once per acquire attempt.
+2. Remove coder from queue when stopping or aborting acquire.
+3. Verify queue size does not grow unbounded across repeated loops.
 
----
+## 6) Implement correct monitor criteria
 
-## 5) Logging behavior cleanup (mostly done)
+- [ ] Detect both terminal conditions safely
 
-- [x] `log_print` is centralized and protected by `log_mutex`.
-- [x] `sim_is_running` checks `is_running` under `stop_mutex`.
-- [ ] Ensure monitor stop transition also respects `stop_mutex` (currently direct write risk).
-- [ ] Ensure terminal event logs are printed exactly once on shutdown.
-- [ ] Decide whether burnout log should print even after stop flag flips.
+Steps:
+1. Completion condition: all coders reached `compiles_required`.
+2. Burnout condition: per coder, compare `now - last_compile_start` to `time_to_burnout`.
+3. Read coder timing/counters under coder mutex to avoid races.
+4. On terminal condition, call stop logic once and exit monitor thread.
+5. Keep monitor polling with short sleep (`MONITOR_SLEEP_MS`) to avoid busy spin.
 
-Exit when: logs are coherent and deterministic at shutdown.
+## 7) Harden parser and initialization
 
----
+- [ ] Add robust allocation and input guards
 
-## 6) Parser/init robustness (partially done)
+Steps:
+1. Validate each numeric input domain before starting threads.
+2. Reject zero/negative values where invalid.
+3. Check all allocations (`sim`, `args`, coders, dongles).
+4. Prefer zero-initialized allocation for top-level structs.
 
-- [x] coder mutexes and state fields are initialized.
-- [x] dongle mutex/cond are initialized.
-- [x] `is_running` and `start_time` are initialized.
-- [ ] Add allocation failure checks for `sim` and `sim->args`.
-- [ ] Zero-init `sim` safely (`calloc` preferred).
-- [ ] Validate numeric domains (non-zero/positive timings, coder count > 0).
+- [ ] Add partial-init rollback
 
-Exit when: init path is safe on all invalid input and allocation failures.
+Steps:
+1. If any init step fails after mutex creation starts, destroy initialized mutexes/conds.
+2. Free partially allocated arrays safely.
+3. Return clean failure without leaking resources.
 
----
+## 8) Complete cleanup paths
 
-## 7) Cleanup completeness (still pending)
+- [ ] Destroy every initialized sync primitive
 
-- [ ] In `free_all`, destroy each coder `last_compile_mutex`.
-- [ ] Destroy global `stop_mutex` and `log_mutex` before freeing `sim`.
-- [ ] Add partial-init cleanup path if init fails after some mutexes are created.
+Steps:
+1. Destroy each coder `last_compile_mutex`.
+2. Destroy each dongle mutex and cond.
+3. Destroy global `stop_mutex` and `log_mutex`.
+4. Free waiters heap storage for every dongle.
+5. Free `args`, coder array, dongle array, and sim object once.
 
-Exit when: no invalid mutex lifetime and no leaks on normal/early exit.
+## 9) Final code quality pass
 
----
+- [ ] Remove race-prone direct shared-state access
 
-## 8) Scheduler correctness checks (needs validation)
+Steps:
+1. Audit all `is_running` reads/writes; route through lock-safe helpers.
+2. Audit monitor reads of coder fields; lock where needed.
+3. Ensure no mutex remains locked across function paths on error.
 
-- [x] Heap push/pop/peek/remove are implemented.
-- [ ] Verify waiter enqueue is not duplicated across wakeups.
-- [ ] Verify FIFO ordering under contention.
-- [ ] Verify EDF ordering under contention.
-- [ ] Verify cooldown behavior with repeated acquire/release.
+- [ ] Confirm no duplicate responsibility between monitor and coder paths
 
-Exit when: queue behavior matches policy in repeated runs.
+Steps:
+1. Ensure burnout handling does not conflict with monitor stop handling.
+2. Ensure only one path performs final shutdown transition.
+3. Ensure logs for terminal events are emitted at most once.
 
----
+## 10) Ready-for-validation gate
 
-## 9) Validation runbook (what is left to run)
+- [ ] Implementation complete
 
-- [ ] `make re`
-- [ ] Wrong argc
-- [ ] Non-numeric argument
-- [ ] Bad scheduler string
-- [ ] Zero/negative timing arguments
-- [ ] 1 coder run
-- [ ] 2 coder run
-- [ ] 4+ coder run (ensure all IDs appear repeatedly)
-- [ ] Burnout scenario
-- [ ] `compiles_required` completion scenario
-- [ ] FIFO and EDF comparison scenario
-- [ ] Leak/sanitizer run
-
-Suggested quick smoke set after hang fixes:
-- [ ] 1 coder, non-zero cooldown (currently hangs after first cycle)
-- [ ] 2 coders, FIFO, short times (must terminate)
-- [ ] 2 coders, EDF, short times (must terminate)
-- [ ] burnout case with very small `time_to_burnout`
-- [ ] completion case with low `compiles_required`
-
-Exit when: all above pass without deadlock, crash, or hang.
-
----
-
-## Done when
-
-- [ ] Consistent API names and clean header.
-- [ ] Deterministic stop/monitor behavior exists.
-- [ ] Thread loop obeys action return values.
-- [ ] Cleanup destroys all initialized mutexes/conds.
-- [ ] Validation runbook passes end to end.
+Steps:
+1. Confirm all sections 1-9 are checked.
+2. Rebuild with strict flags and zero warnings.
+3. Only then move to runtime validation/test matrix.

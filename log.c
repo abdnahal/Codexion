@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 15:13:15 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/20 13:01:43 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/20 16:24:48 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ int queue_waiter(t_dongle *dongle, t_coder *coder)
 int acquire_one_dongle(t_coder *coder, t_dongle *dongle)
 {
     long now;
+    struct timespec ts;
 
     pthread_mutex_lock(&dongle->mutex);
     if (!queue_waiter(dongle, coder))
@@ -72,7 +73,9 @@ int acquire_one_dongle(t_coder *coder, t_dongle *dongle)
             log_print(coder->sim, coder->id, "has taken a dongle");
             return 1;
         }
-        pthread_cond_wait(&dongle->cond, &dongle->mutex);
+        ts.tv_sec = 0;
+        ts.tv_nsec = 5000000;
+        pthread_cond_timedwait(&dongle->cond, &dongle->mutex, &ts);
     }
     heap_remove_coder(&dongle->waiters, coder->id);
     pthread_mutex_unlock(&dongle->mutex);
@@ -82,12 +85,12 @@ int acquire_one_dongle(t_coder *coder, t_dongle *dongle)
 void release_one_dongle(t_dongle *dongle, long cooldown)
 {
     pthread_mutex_lock(&dongle->mutex);
-    usleep(cooldown * 1000);
     dongle->is_taken = 0;
     dongle->holder_id = 0;
     dongle->released_at = get_time_ms();
     pthread_cond_broadcast(&dongle->cond);
     pthread_mutex_unlock(&dongle->mutex);
+    usleep(cooldown * 1000);
 }
 
 void taken_dongle(t_coder *coder)

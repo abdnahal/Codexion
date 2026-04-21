@@ -6,13 +6,13 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:15:56 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/20 16:10:02 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/21 15:47:11 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-int innit(long **vars, char sc[], t_sim *sim)
+int init(long **vars, char sc[], t_sim *sim)
 {
     sim->start_time = get_time_ms();
     sim->is_running = 1;
@@ -30,7 +30,7 @@ int innit(long **vars, char sc[], t_sim *sim)
         sim->args->scheduler = EDF;
     else
         return 0;
-    if (!innit_coders(sim) || !init_dongles(sim))
+    if (!init_coders(sim) || !init_dongles(sim))
         return 0;
     bind_coder_dongles(sim);
     return 1;
@@ -60,7 +60,7 @@ int     init_dongles(t_sim *sim)
     return 1;
 }
 
-int innit_coders(t_sim *sim)
+int init_coders(t_sim *sim)
 {
     int i;
     
@@ -124,7 +124,7 @@ int main(int ac, char **av)
     sim = malloc(sizeof(t_sim));
     pthread_mutex_init(&sim->log_mutex, NULL);
     pthread_mutex_init(&sim->stop_mutex, NULL);
-    if (!innit(vars, av[8], sim))
+    if (!init(vars, av[8], sim))
         return 0;
     launch_threads(sim);
     free_all(sim);

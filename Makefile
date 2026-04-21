@@ -1,14 +1,19 @@
 NAME = Codexion
 CC = cc -Wall -Wextra -Werror -pthread
 SRC = *.c
-RM = rm -rf
+RM = rm -f
 
 
-all:
+all: $(NAME)
+
+
+$(NAME):
 	$(CC) $(SRC) -o $(NAME)
 
 clean:
+	$(RM) *.o
+
+fclean: clean
 	$(RM) $(NAME)
 
-re:
-	clean all
+re: fclean all

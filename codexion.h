@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/20 13:06:13 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/21 15:47:45 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,11 +52,11 @@ typedef struct s_args       t_args;
 void ft_error(char *str);
 long get_time_ms();
 void launch_threads(t_sim *sim);
-int innit_coders(t_sim* sim);
+int init_coders(t_sim* sim);
 void *coder_routine(void *sim);
 long    ft_atoi(const char *nptr);
 int     ft_strlen(const char *str);
-int innit(long **vars, char *sc, t_sim *sim);
+int init(long **vars, char *sc, t_sim *sim);
 int     init_dongles(t_sim *sim);
 void    bind_coder_dongles(t_sim *sim);
 long    scheduler_priority_for_waiter(const t_sim *sim, const t_coder *coder, long request_ts);
@@ -69,14 +69,9 @@ int     heap_remove_coder(t_heap *heap, int coder_id);
 void free_all(t_sim *sim);
 void taken_dongle(t_coder *coder);
 int sim_is_running(t_sim *sim);
- void log_print(t_sim *sim, int coder_id, char *msg);
- int can_take_dongle(t_dongle *dongle, int coder_id, long now, long cooldown);
- int queue_waiter(t_dongle *dongle, t_coder *coder);
- int acquire_one_dongle(t_coder *coder, t_dongle *dongle);
- void release_one_dongle(t_dongle *dongle, long cooldown);
-void taken_dongle(t_coder *coder);
+void log_print(t_sim *sim, int coder_id, char *msg);
 int compile(t_coder *coder);
-void debbug(t_coder *coder);
+void debug(t_coder *coder);
 void refactor(t_coder *coder);
 void burnout(t_coder *coder);
 void *monitor_thread(void *sime);
