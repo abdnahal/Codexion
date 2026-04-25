@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/16 16:22:24 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/21 15:47:11 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/23 18:17:14 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@ int compile(t_coder *coder)
 
 void debug(t_coder *coder)
 {
+    if (!sim_is_running(coder->sim))
+        return ;
     pthread_mutex_lock(&coder->last_compile_mutex);
     coder->state = CODER_DEBUGGING;
     log_print(coder->sim, coder->id, "is debugging");
@@ -35,6 +37,8 @@ void debug(t_coder *coder)
 
 void refactor(t_coder *coder)
 {
+    if (!sim_is_running(coder->sim))
+        return ;
     pthread_mutex_lock(&coder->last_compile_mutex);
     coder->state = CODER_REFACTORING;
     log_print(coder->sim, coder->id, "is refactoring");

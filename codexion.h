@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/21 15:47:45 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/25 11:12:50 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,9 +50,11 @@ typedef struct s_heap       t_heap;
 typedef struct s_args       t_args;
 
 void ft_error(char *str);
+void parser(t_sim *sim);
 long get_time_ms();
 void launch_threads(t_sim *sim);
 int init_coders(t_sim* sim);
+int is_in(t_heap *heap, int coder_id);
 void *coder_routine(void *sim);
 long    ft_atoi(const char *nptr);
 int     ft_strlen(const char *str);
@@ -67,7 +69,7 @@ int     heap_pop(t_heap *heap, t_waiter *out);
 int     heap_peek(const t_heap *heap, t_waiter *out);
 int     heap_remove_coder(t_heap *heap, int coder_id);
 void free_all(t_sim *sim);
-void taken_dongle(t_coder *coder);
+int taken_dongle(t_coder *coder);
 int sim_is_running(t_sim *sim);
 void log_print(t_sim *sim, int coder_id, char *msg);
 int compile(t_coder *coder);

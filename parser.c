@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:15:56 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/21 15:47:11 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/25 11:16:57 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,13 @@ int init(long **vars, char sc[], t_sim *sim)
     else if (strcmp(sc, "edf") == 0)
         sim->args->scheduler = EDF;
     else
-        return 0;
+        free_all(sim), ft_error("Scheduler should be either fifo or edf");
+    parser(sim);
     if (!init_coders(sim) || !init_dongles(sim))
+    {
+        free_all(sim);
         return 0;
+    }
     bind_coder_dongles(sim);
     return 1;
 }
@@ -125,8 +129,7 @@ int main(int ac, char **av)
     pthread_mutex_init(&sim->log_mutex, NULL);
     pthread_mutex_init(&sim->stop_mutex, NULL);
     if (!init(vars, av[8], sim))
-        return 0;
+        return 1;
     launch_threads(sim);
-    free_all(sim);
-    return 1;
+    return 0;
 }

@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/10 11:52:06 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/15 15:22:02 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/25 11:13:48 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,20 @@ static void heap_swap(t_waiter *a, t_waiter *b)
     tmp = *a;
     *a = *b;
     *b = tmp;
+}
+
+int is_in(t_heap *heap, int coder_id)
+{
+    int i;
+    
+    i = 0;
+    while (i < heap->size)
+    {
+        if (coder_id == heap->entries[i].coder_id)
+            return 1;
+        i++;
+    }
+    return 0;
 }
 
 static int waiter_is_higher_priority(t_waiter a, t_waiter b)
@@ -126,6 +140,8 @@ int heap_push(t_heap *heap, t_waiter w)
         return 0;
     if (heap->size >= heap->capacity && !heap_grow(heap))
         return 0;
+    if (is_in(heap, w.coder_id))
+        return 1;
     heap->entries[heap->size] = w;
     sift_up(heap, heap->size);
     heap->size++;

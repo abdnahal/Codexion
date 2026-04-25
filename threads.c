@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/08 15:34:23 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/21 15:47:45 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/25 11:16:14 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,18 +15,18 @@
 void    *coder_routine(void *coder)
 {
     t_coder *worker;
-    long now;
     
     worker = (t_coder *)coder;
     while (sim_is_running(worker->sim))
     {
-        now = get_time_ms();
-        if (now >= worker->sim->args->time_to_burnout + worker->last_compile_start)
-            burnout(worker);
-        taken_dongle(worker);
-        compile(worker);
-        debug(worker);
-        refactor(worker);
+        if (taken_dongle(worker))
+        {
+            compile(worker);
+            if (sim_is_running(worker->sim))
+                debug(worker);
+            if (sim_is_running(worker->sim))
+                refactor(worker);
+        }
     }
     return NULL;
 }
@@ -36,38 +36,55 @@ void launch_threads(t_sim *sim)
     int i;
     
     i = 0;
+    if (pthread_create(&sim->monitor_thread, NULL, monitor_thread, sim))
+        free_all(sim), ft_error("Monitor thread creation failed!");
     while (i < sim->args->num_coders)
     {
-        pthread_create(&sim->coders[i].thread, NULL, coder_routine, &sim->coders[i]);
+        if (pthread_create(&sim->coders[i].thread, NULL, coder_routine, &sim->coders[i]))
+            free_all(sim), ft_error("Thread creation (pthread_create) failed!");
         i++;
     }
-    pthread_create(&sim->monitor_thread, NULL, monitor_thread, sim);
     i = 0;
     while (i < sim->args->num_coders)
     {
-        pthread_join(sim->coders[i].thread, NULL);
+        if (pthread_join(sim->coders[i].thread, NULL))
+            free_all(sim), ft_error("Pthread_join failed!");
         i++;
     }
-    pthread_join(sim->monitor_thread, NULL);
+    if (pthread_join(sim->monitor_thread, NULL))
+        free_all(sim), ft_error("Monitor thread join failed!");
+    free_all(sim);
 }
 
 void *monitor_thread(void *sime)
 {
     t_sim *sim;
-    int i;
-    int count;
+    int i, (count), (compile_count);
+    long last_compile, (now);
     
     sim = (t_sim *)sime;
     while (sim_is_running(sim))
     {
         i = 0;
         count = 0;
+        now = get_time_ms();
         while (i < sim->args->num_coders)
         {
-            if (sim->coders[i].compile_count == sim->args->compiles_required)
+            pthread_mutex_lock(&sim->coders[i].last_compile_mutex);
+            compile_count = sim->coders[i].compile_count;
+            last_compile = sim->coders[i].last_compile_start;
+            pthread_mutex_unlock(&sim->coders[i].last_compile_mutex);
+            if (compile_count >= sim->args->compiles_required)
                 count++;
+            if (last_compile + sim->args->time_to_burnout <= now)
+            {
+                burnout(&sim->coders[i]);
+                break ;
+            }
             i++;
         }
+        if (!sim_is_running(sim))
+            break ;
         if (count == sim->args->num_coders)
         {
             stop_simulation(sim);
@@ -84,7 +101,13 @@ void stop_simulation(t_sim *sim)
 
     i = 0;
     pthread_mutex_lock(&sim->stop_mutex);
+    if (!sim->is_running)
+    {
+        pthread_mutex_unlock(&sim->stop_mutex);
+        return ;
+    }
     sim->is_running = 0;
+    pthread_mutex_unlock(&sim->stop_mutex);
     while (i < sim->args->num_coders)
     {
         pthread_mutex_lock(&sim->dongles[i].mutex);
@@ -92,5 +115,4 @@ void stop_simulation(t_sim *sim)
         pthread_mutex_unlock(&sim->dongles[i].mutex);
         i++;
     }
-    pthread_mutex_unlock(&sim->stop_mutex);
 }
