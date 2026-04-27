@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:04:16 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/25 11:12:50 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/27 09:05:15 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,9 +56,9 @@ void launch_threads(t_sim *sim);
 int init_coders(t_sim* sim);
 int is_in(t_heap *heap, int coder_id);
 void *coder_routine(void *sim);
-long    ft_atoi(const char *nptr);
+long    ft_atoi(const char *nptr, t_sim *sim);
 int     ft_strlen(const char *str);
-int init(long **vars, char *sc, t_sim *sim);
+int init(char **av, t_sim *sim);
 int     init_dongles(t_sim *sim);
 void    bind_coder_dongles(t_sim *sim);
 long    scheduler_priority_for_waiter(const t_sim *sim, const t_coder *coder, long request_ts);

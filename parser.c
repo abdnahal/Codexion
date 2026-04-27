@@ -6,27 +6,27 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:15:56 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/25 11:16:57 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/27 09:42:21 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-int init(long **vars, char sc[], t_sim *sim)
+int init(char **av, t_sim *sim)
 {
     sim->start_time = get_time_ms();
     sim->is_running = 1;
     sim->args = malloc(sizeof(t_args));
-    sim->args->num_coders = *(vars[0]);
-    sim->args->time_to_burnout = *(vars[1]);
-    sim->args->time_to_compile = *(vars[2]);
-    sim->args->time_to_debug = *(vars[3]);
-    sim->args->time_to_refactor = *(vars[4]);
-    sim->args->compiles_required = *(vars[5]);
-    sim->args->dongle_cooldown = *(vars[6]);
-    if (strcmp(sc, "fifo") == 0)
+    sim->args->num_coders = ft_atoi(av[1], sim);
+    sim->args->time_to_burnout = ft_atoi(av[2], sim);
+    sim->args->time_to_compile = ft_atoi(av[3], sim);
+    sim->args->time_to_debug = ft_atoi(av[4], sim);
+    sim->args->time_to_refactor = ft_atoi(av[5], sim);
+    sim->args->compiles_required = ft_atoi(av[6], sim);
+    sim->args->dongle_cooldown = ft_atoi(av[7], sim);
+    if (strcmp(av[8], "fifo") == 0)
         sim->args->scheduler = FIFO;
-    else if (strcmp(sc, "edf") == 0)
+    else if (strcmp(av[8], "edf") == 0)
         sim->args->scheduler = EDF;
     else
         free_all(sim), ft_error("Scheduler should be either fifo or edf");
@@ -109,26 +109,14 @@ void    bind_coder_dongles(t_sim *sim)
 
 int main(int ac, char **av)
 {
-    long coders, (burnout), (to_compile), (to_debug), (to_refactor), (compiles_req);
-    long cooldown;
-    int i;
     t_sim *sim;
     
-    long *vars[] = {&coders, &burnout, &to_compile,
-        &to_debug, &to_refactor, &compiles_req,
-    &cooldown};
     if (ac != 9)
-        ft_error("Missing arguments");
-    i = 0;
-    while (i < 7)
-    {
-        *(vars[i]) = ft_atoi(av[i+1]);
-        i++;
-    }
+        ft_error("Missing arguments");    
     sim = malloc(sizeof(t_sim));
     pthread_mutex_init(&sim->log_mutex, NULL);
     pthread_mutex_init(&sim->stop_mutex, NULL);
-    if (!init(vars, av[8], sim))
+    if (!init(av, sim))
         return 1;
     launch_threads(sim);
     return 0;

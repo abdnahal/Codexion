@@ -6,7 +6,7 @@
 /*   By: abdnahal <abdnahal@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 08:36:43 by abdnahal          #+#    #+#             */
-/*   Updated: 2026/04/25 10:59:32 by abdnahal         ###   ########.fr       */
+/*   Updated: 2026/04/27 09:04:25 by abdnahal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,18 +18,18 @@ void ft_error(char *str)
     exit(1);
 }
 
-long    ft_atoi(const char *nptr)
+long    ft_atoi(const char *nptr, t_sim *sim)
 {
         long i, (sign), (nbr);
         i = 0;
         sign = 1;
         nbr = 0;
         if (ft_strlen(nptr) > 10)
-                ft_error("Out of range int value detected !");
+                free_all(sim), ("Out of range int value detected !");
         if (nptr[i] == '-' || nptr[i] == '+')
         {
                 if (!(nptr[i + 1] >= '0' && nptr[i + 1] <= '9'))
-                        ft_error("Non Numeric value detected !");
+                        free_all(sim), ft_error("Non Numeric value detected !");
                 if (nptr[i] == '-')
                         sign *= -1;
                 i++;
@@ -37,9 +37,9 @@ long    ft_atoi(const char *nptr)
         while (nptr[i] >= '0' && nptr[i] <= '9')
                 nbr = nbr * 10 + nptr[i++] - '0';
         if (nptr[i] && !(nptr[i] >= '0' && nptr[i] <= '9'))
-                ft_error("Non Numeric value detected !");
+                free_all(sim), ft_error("Non Numeric value detected !");
         if (nbr > INT_MAX || nbr < INT_MIN)
-                ft_error("Out of range int value detected !");
+                free_all(sim), ft_error("Out of range int value detected !");
         return (nbr * sign);
 }
 
